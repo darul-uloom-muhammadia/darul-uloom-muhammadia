@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
-Sitemap: /sitemap.xml
+Disallow: /admin-settings.html
+Disallow: /forgot-password.html
+Disallow: /reset-password.html
+Sitemap: https://darul-uloom-muhammadia-seven.vercel.app/sitemap.xml
