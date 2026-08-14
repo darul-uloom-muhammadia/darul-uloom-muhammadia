@@ -1,0 +1,1 @@
+{"name":"darul-uloom-muhammadia-karachi","version":"1.0.0","private":true,"scripts":{"dev":"serve .","build":"echo static-site-build-ready","start":"serve ."},"dependencies":{"serve":"^14.2.4"},"engines":{"node":">=18"}}
