@@ -20,13 +20,34 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
 })();
 
+// Keep Location and Leadership fields populated when the live editor opens.
+(function keepEditorFieldsInSync(){
+  if(new URLSearchParams(location.search).get('admin')!=='1')return;
+  const fill=async()=>{
+    try{
+      const {data}=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();
+      const c=data?.content||{}, loc=c.location||{}, leaders=c.leadership?.items||[];
+      const map={
+        'location.address':loc.address||c.brand?.address||'',
+        'location.mapsUrl':loc.mapsUrl||'',
+        'location.lat':loc.lat||'',
+        'location.lng':loc.lng||'',
+        'location.show':String(loc.show!==false)
+      };
+      Object.entries(map).forEach(([p,v])=>{const el=document.querySelector('#ale-forms [data-path="'+p+'"]');if(el&&!el.value)el.value=v});
+      leaders.slice(0,2).forEach((x,i)=>{const el=document.querySelector('#ale-forms [data-path="leadership.items.'+i+'.3"]');if(el&&!el.value)el.value=x?.[3]||''});
+    }catch(e){console.warn('Editor field sync failed',e)}
+  };
+  let tries=0;const timer=setInterval(()=>{fill();tries++;if(tries>20)clearInterval(timer)},500);
+})();
+
 // Load the final website-wide CMS layer after the page is ready.
 (function loadFinalCms(){
   const load=()=>{
     if(document.getElementById('final-cms-script')) return;
     const s=document.createElement('script');
     s.id='final-cms-script';
-    s.src='final-cms.js?v=20260815-2';
+    s.src='final-cms.js?v=20260815-3';
     s.defer=true;
     document.head.appendChild(s);
   };
