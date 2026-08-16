@@ -7,6 +7,7 @@
     if(!sb||!form||!msgEl)return;
     form.addEventListener('submit',async function(e){
       e.preventDefault();
+      e.stopImmediatePropagation();
       const email=document.getElementById('regEmail')?.value.trim();
       const password=document.getElementById('regPassword')?.value||'';
       const name=document.getElementById('regName')?.value.trim()||'';
@@ -23,7 +24,7 @@
           if(raw.includes('already registered')||raw.includes('already exists')||raw.includes('user already')){
             setMsg('An account with this email address already exists. Please sign in to your existing account instead.','error');
             const loginTab=document.getElementById('loginTab');
-            if(loginTab){const old=loginTab.textContent;loginTab.textContent='Sign In';loginTab.click();setTimeout(()=>{loginTab.textContent=old;},2500);}
+            if(loginTab){loginTab.textContent='Sign In';loginTab.click();}
           }else if(raw.includes('password')){
             setMsg('Your password does not meet the required security rules. Please choose a stronger password.','error');
           }else if(raw.includes('invalid')&&raw.includes('email')){
