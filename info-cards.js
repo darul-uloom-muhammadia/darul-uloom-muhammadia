@@ -3,7 +3,6 @@ const defaults=[
  {icon:'📖',title:'نصابِ تعلیم',body:'یہاں نصابِ تعلیم، درجات اور متعلقہ تعلیمی معلومات درج کی جائیں گی۔'},
  {icon:'▣',title:'تعلیمی شعبہ جات',body:'یہاں جامعہ کے مختلف تعلیمی شعبہ جات کی تفصیل درج کی جائے گی۔'},
  {icon:'◈',title:'شعبہ جات',body:'یہاں جامعہ کے مختلف شعبہ جات اور ان کی بنیادی معلومات درج کی جائیں گی۔'},
- {icon:'☾',title:'دارالافتاء',body:'یہاں دارالافتاء سے متعلق تعارف، اوقات اور دیگر معلومات درج کی جائیں گی۔'},
  {icon:'⌂',title:'ادارہ و انتظامی معلومات',body:'یہاں ادارے، انتظامیہ اور متعلقہ معلومات درج کی جائیں گی۔'},
  {icon:'⌁',title:'منصوبے',body:'یہاں جاری اور آئندہ منصوبوں کی معلومات درج کی جائیں گی۔'},
  {icon:'☷',title:'قواعد و ضوابط',body:'یہاں طلبہ اور زائرین کے لیے ضروری قواعد و ضوابط درج کیے جائیں گے۔'},
@@ -13,7 +12,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 async function load(){try{const {data,error}=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(error)throw error;return data?.content||{}}catch(e){return {}}}
 function render(c){
  if(document.getElementById('info-cards-section'))return;
- const items=Array.isArray(c.infoCards)&&c.infoCards.length?c.infoCards:defaults;
+ const items=Array.isArray(c.infoCards)&&c.infoCards.length?c.infoCards.filter(x=>String(x?.title||'').trim()!=='دارالافتاء'):defaults;
  const section=document.createElement('section');section.id='info-cards-section';section.className='section info-cards-section';section.dir='rtl';
  section.innerHTML='<div class="container"><div class="section-head info-cards-head"><span class="eyebrow">جامعہ کی معلومات</span><h2>اہم معلومات</h2><p>نیچے دیے گئے کسی بھی حصے پر کلک کریں اور اس کی تفصیلات ملاحظہ کریں۔</p></div><div class="info-cards-grid">'+items.slice(0,8).map((x,i)=>`<button type="button" class="info-card" data-info-card="${i}"><span class="info-card-icon">${esc(x.icon||defaults[i]?.icon||'•')}</span><span class="info-card-title">${esc(x.title||defaults[i]?.title||'معلومات')}</span><span class="info-card-more">تفصیلات دیکھیں</span></button>`).join('')+'</div></div>';
  const taaruf=document.getElementById('taaruf');if(taaruf)taaruf.insertAdjacentElement('afterend',section);else document.querySelector('main')?.prepend(section);
