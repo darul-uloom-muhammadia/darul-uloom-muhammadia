@@ -4,4 +4,4 @@ Disallow: /admin.html
 Disallow: /admin-settings.html
 Disallow: /forgot-password.html
 Disallow: /reset-password.html
-Sitemap: https://darul-uloom-muhammadia-2jplheuu1.vercel.app/sitemap.xml
+Sitemap: https://darul-uloom-muhammadia.github.io/darul-uloom-muhammadia/sitemap.xml
