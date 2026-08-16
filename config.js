@@ -26,11 +26,12 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
     window.__siteContent=c;
   }
   async function publicRefresh(){try{const c=await loadHomepage();applyPublic(c);}catch(e){console.warn('Public CMS refresh failed:',e);}}
+  function loadInfoCards(){if(!location.pathname.endsWith('/')&&!location.pathname.endsWith('/index.html'))return;if(document.getElementById('info-cards-script'))return;const s=document.createElement('script');s.id='info-cards-script';s.src='info-cards.js?v=20260816-1';s.defer=true;document.body.appendChild(s);}
   async function applyAdminBrand(){try{const c=await loadHomepage(),b=c.brand||{};const t=document.getElementById('topTitle');if(t&&b.name)t.textContent=b.name+' '+(b.city||'')+' · Administration';if(b.logoImage)document.querySelectorAll('.admin-logo,.logo-mark').forEach(el=>{el.innerHTML='<img src="'+String(b.logoImage).replace(/["<>]/g,'')+'" alt="Darul Uloom Muhammadia logo">';el.classList.add('has-image');});}catch(e){}}
   function syncEditorFields(){if(new URLSearchParams(location.search).get('admin')!=='1')return;let tries=0;const timer=setInterval(async()=>{try{const c=await loadHomepage(),loc=c.location||{},leaders=c.leadership?.items||[];const vals={'location.address':loc.address||c.brand?.address||'','location.mapsUrl':loc.mapsUrl||'','location.lat':loc.lat||'','location.lng':loc.lng||'','location.show':String(loc.show!==false)};Object.entries(vals).forEach(([p,v])=>{const el=document.querySelector('#ale-forms [data-path="'+p+'"]');if(el&&!el.value)el.value=v;});leaders.slice(0,2).forEach((x,i)=>{const el=document.querySelector('#ale-forms [data-path="leadership.items.'+i+'.3"]');if(el&&!el.value)el.value=x?.[3]||'';});}catch(e){}if(++tries>20)clearInterval(timer);},500);}
   function loadCharityFix(){const p=location.pathname;if(!p.endsWith('charity.html')&&!p.endsWith('charity-submission-receipt.html'))return;if(document.getElementById('charity-security-fix'))return;const s=document.createElement('script');s.id='charity-security-fix';s.src='charity-security-fix.js?v=20260816-4';s.defer=true;document.head.appendChild(s);}
   const isHomePage = location.pathname.endsWith('/') || location.pathname.endsWith('/index.html');
   const isAdminPage = new URLSearchParams(location.search).get('admin') === '1';
-  const start=()=>{if(isHomePage)publicRefresh();if(isAdminPage)applyAdminBrand();syncEditorFields();loadCharityFix();};
+  const start=()=>{if(isHomePage){publicRefresh();loadInfoCards();}if(isAdminPage)applyAdminBrand();syncEditorFields();loadCharityFix();};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
