@@ -6,7 +6,8 @@ const defaults=[
  {icon:'⌂',title:'ادارہ و انتظامی معلومات',body:'یہاں ادارے، انتظامیہ اور متعلقہ معلومات درج کی جائیں گی۔'},
  {icon:'⌁',title:'منصوبے',body:'یہاں جاری اور آئندہ منصوبوں کی معلومات درج کی جائیں گی۔'},
  {icon:'☷',title:'قواعد و ضوابط',body:'یہاں طلبہ اور زائرین کے لیے ضروری قواعد و ضوابط درج کیے جائیں گے۔'},
- {icon:'▤',title:'نوٹس بورڈ',body:'اہم اعلانات، تازہ نوٹس اور انتظامیہ کی ضروری اطلاعات یہاں دکھائی جائیں گی۔'}
+ {icon:'▤',title:'نوٹس بورڈ',body:'اہم اعلانات، تازہ نوٹس اور انتظامیہ کی ضروری اطلاعات یہاں دکھائی جائیں گی۔'},
+ {icon:'🤝',title:'طریقہ تعاون',body:'ادارے کے ساتھ تعاون، عطیات اور دیگر معاونت کے طریقہ کار کی معلومات یہاں درج کی جائیں گی۔'}
 ];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 async function load(){try{const {data,error}=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(error)throw error;return data?.content||{}}catch(e){return {}}}
