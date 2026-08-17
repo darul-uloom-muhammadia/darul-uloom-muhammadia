@@ -60,3 +60,57 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
+
+/* Leadership photo/logo size controls. Existing photo uploads remain unchanged. */
+(()=>{
+  const safeNum=v=>Math.max(50,Math.min(180,parseInt(v,10)||90));
+  function addControls(){
+    if(new URLSearchParams(location.search).get('admin')!=='1')return;
+    const lead=document.querySelector('[data-section="leadership"]');
+    if(!lead||document.getElementById('leader-size-controls'))return;
+    const box=document.createElement('div');
+    box.id='leader-size-controls';
+    box.className='ale-media';
+    box.innerHTML='<h3>Leadership Photo / Logo Size</h3><p style="margin:4px 0 12px;color:#65748b">Choose the displayed size for each leader photo/logo. This does not change the original uploaded file.</p>'+
+      '<div class="ale-field"><label>Founder size (px)</label><input data-path="leadership.items.0.4" type="number" min="50" max="180" step="5" value="90"><small>50–180 px</small></div>'+
+      '<div class="ale-field"><label>Principal size (px)</label><input data-path="leadership.items.1.4" type="number" min="50" max="180" step="5" value="90"><small>50–180 px</small></div>';
+    lead.appendChild(box);
+    const c=window.__siteContent||window.__adminEditorContent||{};
+    const items=c.leadership?.items||[];
+    const a=box.querySelector('[data-path="leadership.items.0.4"]');
+    const b=box.querySelector('[data-path="leadership.items.1.4"]');
+    if(a)a.value=safeNum(items[0]?.[4]||90);
+    if(b)b.value=safeNum(items[1]?.[4]||90);
+  }
+  function applySizes(c){
+    const items=c?.leadership?.items||[];
+    document.querySelectorAll('#leadership .leaders article').forEach((article,i)=>{
+      const img=article.querySelector('.leader-photo');
+      if(img){
+        const size=safeNum(items[i]?.[4]||90);
+        img.style.width=size+'px';
+        img.style.height=size+'px';
+      }
+    });
+    const lead=document.querySelector('[data-section="leadership"]');
+    if(lead){
+      const inputs=lead.querySelectorAll('#leader-size-controls [data-path]');
+      if(inputs[0])inputs[0].value=safeNum(items[0]?.[4]||90);
+      if(inputs[1])inputs[1].value=safeNum(items[1]?.[4]||90);
+    }
+  }
+  function wrapApply(){
+    if(typeof window.__applySiteContent!=='function'||window.__leadershipSizeWrapped)return false;
+    const original=window.__applySiteContent;
+    window.__applySiteContent=function(c){original(c);setTimeout(()=>applySizes(c),0);};
+    window.__leadershipSizeWrapped=true;
+    return true;
+  }
+  function init(){
+    addControls();
+    if(!wrapApply())setTimeout(init,250);
+    else applySizes(window.__siteContent||{});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  new MutationObserver(()=>addControls()).observe(document.body,{childList:true,subtree:true});
+})();
