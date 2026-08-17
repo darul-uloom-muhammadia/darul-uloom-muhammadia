@@ -1,0 +1,1 @@
+// Student card final visual fix: preserve the existing card design, match the logo navy/gold theme, and render a complete QR code.
