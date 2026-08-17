@@ -1,1 +1,1 @@
-{"version":2,"framework":null,"buildCommand":null,"outputDirectory":".","headers":[{"source":"/(.*)","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}]}
+{"version":2,"framework":null,"buildCommand":null,"outputDirectory":".","headers":[{"source":"/(admin\\.html|admin-settings\\.html|forgot-password\\.html|reset-password\\.html|management\\.html|student-management\\.html|website-editor\\.html|location-leadership\\.html)","headers":[{"key":"X-Robots-Tag","value":"noindex, nofollow, noarchive"}]}]}
