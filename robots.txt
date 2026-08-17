@@ -4,4 +4,8 @@ Disallow: /admin.html
 Disallow: /admin-settings.html
 Disallow: /forgot-password.html
 Disallow: /reset-password.html
+Disallow: /management.html
+Disallow: /student-management.html
+Disallow: /website-editor.html
+Disallow: /location-leadership.html
 Sitemap: https://darul-uloom-muhammadia.github.io/darul-uloom-muhammadia/sitemap.xml
