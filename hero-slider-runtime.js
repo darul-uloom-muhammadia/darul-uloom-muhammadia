@@ -13,6 +13,9 @@
       list=list.map(x=>typeof x==='string'?x:(x?.url||x?.src||'')).filter(Boolean);
       if(!list.length&&c?.brand?.heroImage)list=[c.brand.heroImage];
       if(!list.length)return;
+      const style=document.createElement('style');
+      style.textContent='#hero-slider.hero-slider-active{position:relative;overflow:hidden;min-height:360px;display:flex;flex-direction:column;justify-content:flex-end;text-align:center;background:rgba(255,255,255,.08)!important}#hero-slider.hero-slider-active .hero-slider-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity .55s ease;z-index:0}#hero-slider.hero-slider-active:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.58));z-index:1;pointer-events:none}#hero-slider.hero-slider-active strong,#hero-slider.hero-slider-active span{position:relative;z-index:2;text-shadow:0 2px 10px rgba(0,0,0,.45)}';
+      document.head.appendChild(style);
       slider.classList.add('hero-slider-active');
       slider.querySelectorAll('.hero-slider-image').forEach(e=>e.remove());
       const img=document.createElement('img');
@@ -21,7 +24,6 @@
       img.decoding='async';
       img.loading='eager';
       slider.prepend(img);
-      const oldBg=slider.style.backgroundImage;
       slider.style.backgroundImage='none';
       let i=0;
       const show=()=>{
