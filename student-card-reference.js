@@ -1,5 +1,6 @@
 (() => {
-  const CARD_W_REF = 1600, CARD_H_REF = 1040;
+  const CARD_W_REF = 1600, CARD_H_REF = 1009;
+  const DESIGN_W = 1600, DESIGN_H = 1040;
   const NAVY = '#000154', GOLD = '#ffd900';
   const $ = id => document.getElementById(id);
   const loadImage = src => new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>resolve(i);i.onerror=reject;i.src=src});
@@ -11,8 +12,9 @@
   }
   async function studentCardCanvasReference(card){
     const c=document.createElement('canvas');c.width=CARD_W_REF;c.height=CARD_H_REF;const x=c.getContext('2d');
-    x.fillStyle='#e7edf2';x.fillRect(0,0,CARD_W_REF,CARD_H_REF);
-    x.fillStyle=NAVY;x.fillRect(0,0,CARD_W_REF,290);
+    x.save();x.scale(1,CARD_H_REF/DESIGN_H);
+    x.fillStyle='#e7edf2';x.fillRect(0,0,DESIGN_W,DESIGN_H);
+    x.fillStyle=NAVY;x.fillRect(0,0,DESIGN_W,290);
     x.fillStyle='#fff';x.beginPath();x.moveTo(1185,0);x.lineTo(1245,0);x.lineTo(1125,290);x.lineTo(1065,290);x.closePath();x.fill();
     x.fillStyle='rgba(214,239,247,.65)';x.beginPath();x.moveTo(0,290);x.lineTo(1600,340);x.lineTo(1600,470);x.lineTo(0,370);x.closePath();x.fill();
     x.fillStyle='rgba(255,255,255,.38)';x.beginPath();x.moveTo(0,515);x.lineTo(1600,360);x.lineTo(1600,620);x.lineTo(0,820);x.closePath();x.fill();
@@ -28,16 +30,18 @@
     try{const sig=await loadImage('student-signature.svg');x.drawImage(sig,175,705,185,78)}catch(e){}
     x.fillStyle='#1d2b38';x.font='20px Arial';x.fillText('Authorized',174,805);x.fillStyle='#0d47a1';x.fillRect(125,815,255,38);x.fillStyle='#fff';x.font='800 26px Arial';x.fillText('SIGNATORY',155,844);
     const qrSrc=await makeQr(card);if(qrSrc){const qr=await loadImage(qrSrc);x.drawImage(qr,1245,650,245,245)}
-    return c;
+    x.restore();return c;
   }
   async function backCanvasReference(){
-    const c=document.createElement('canvas');c.width=CARD_W_REF;c.height=CARD_H_REF;const x=c.getContext('2d');x.fillStyle=NAVY;x.fillRect(0,0,CARD_W_REF,CARD_H_REF);const logo=await loadImage(logoUrl);x.save();x.beginPath();x.arc(800,520,250,0,Math.PI*2);x.clip();x.drawImage(logo,550,270,500,500);x.restore();return c;
+    const c=document.createElement('canvas');c.width=CARD_W_REF;c.height=CARD_H_REF;const x=c.getContext('2d');
+    x.save();x.scale(1,CARD_H_REF/DESIGN_H);x.fillStyle=NAVY;x.fillRect(0,0,DESIGN_W,DESIGN_H);
+    const logo=await loadImage(logoUrl);x.save();x.beginPath();x.arc(800,520,250,0,Math.PI*2);x.clip();x.drawImage(logo,550,270,500,500);x.restore();x.restore();return c;
   }
   async function openCardReference(card,type){
     if(type!=='student')return window.__originalOpenCard(card,type);
     $('cardModalTitle').textContent='Student ID Card';$('cardModalMeta').textContent=`${selectedStudent.student_name} · GR ${selectedStudent.gr_number} · Expires ${expText(card.expires_at)}`;
     const front=await studentCardCanvasReference(card),back=await backCanvasReference();
-    $('cardPreview').innerHTML='<div class="card-surface ref-card"><canvas id="frontCanvas" width="1600" height="1040"></canvas></div><div class="card-surface ref-card"><canvas id="backCanvas" width="1600" height="1040"></canvas></div>';
+    $('cardPreview').innerHTML='<div class="card-surface ref-card"><canvas id="frontCanvas" width="1600" height="1009"></canvas></div><div class="card-surface ref-card"><canvas id="backCanvas" width="1600" height="1009"></canvas></div>';
     $('frontCanvas').getContext('2d').drawImage(front,0,0);$('backCanvas').getContext('2d').drawImage(back,0,0);$('cardModal').classList.add('open');$('cardModal').dataset.type='student';
   }
   window.__originalOpenCard=window.openCard;window.studentCardCanvas=studentCardCanvasReference;window.backCanvas=backCanvasReference;window.openCard=async(card,type)=>type==='student'?openCardReference(card,type):window.__originalOpenCard(card,type);
