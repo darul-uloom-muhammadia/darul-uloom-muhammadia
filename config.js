@@ -1,7 +1,7 @@
 const SUPABASE_URL = 'https://puvsirrwregusqhkixdz.supabase.co';
 // Use the project's active legacy anon key for broad browser/CDN compatibility.
 // This is a public client key; database access remains protected by Supabase RLS.
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1dnNpcnJ3cmVndXNxaGtpeGR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2OTE5OTUsImV4cCI6MjEwMjI2Nzk5NX0.MKB-T9hXkHDdqjJ8WpD5fIVnWKEAz2zUqWBLdcxOQIQ';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1dnNpcnJ3cmVndXNxaGtpeGR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2OTE5OTUsImV4cCI6MjEwMjI2Nzk5NX0.MKB-T9hXkHDdqJ8WpD5fIVnWKEAz2zUqWBLdcxOQIQ';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 (async function () {
@@ -15,7 +15,8 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
     const b = c.brand || {}, h = c.hero || {};
     setText('.logo b', b.name); setText('.logo small', b.city);
     if (Array.isArray(c.nav)) document.querySelectorAll('nav a').forEach((a,i)=>{ if(c.nav[i]) a.textContent=c.nav[i]; });
-    if (b.logoImage) document.querySelectorAll('.logo-mark,.hero-card .crescent').forEach(el=>{el.innerHTML='<img src="'+String(b.logoImage).replace(/["<>]/g,'')+'" alt="Darul Uloom Muhammadia logo">';el.classList.add('has-image');});
+    // The uploaded logo belongs only in the compact header logo. Do not inject it into the hero card.
+    if (b.logoImage) document.querySelectorAll('.logo-mark').forEach(el=>{el.innerHTML='<img src="'+String(b.logoImage).replace(/["<>]/g,'')+'" alt="Darul Uloom Muhammadia logo">';el.classList.add('has-image');});
     setText('.hero .eyebrow',h.eyebrow); const title=document.querySelector('.hero h1'); if(title){title.textContent='';title.append(document.createTextNode((h.heading||'')+' '));const sp=document.createElement('span');sp.textContent=h.highlight||'';title.append(sp);} setText('.hero-copy p',h.description); setText('.hero .actions .btn:not(.outline)',h.button); setText('.hero .actions .btn.outline',h.secondary); setText('.hero-card strong',h.cardTitle); setText('.hero-card span',h.cardSubtitle);
     setText('#about .eyebrow',c.about?.eyebrow); setText('#about h2',c.about?.heading); setText('#about .section-head p',c.about?.description);
     setText('#madrasa .eyebrow',c.madrasa?.eyebrow); setText('#madrasa h2',c.madrasa?.heading);
