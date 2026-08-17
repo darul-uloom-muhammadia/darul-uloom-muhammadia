@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hero Slider Manager — Darul Uloom Muhammadia</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#16243a;font-family:Arial,sans-serif}.wrap{width:min(1000px,94%);margin:30px auto}.card{background:#fff;border:1px solid #dfe8f3;border-radius:18px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.08)}h1{margin:0;color:#071b3a}.sub{color:#65748b;margin:8px 0 22px}.drop{border:2px dashed #9bb5d3;border-radius:14px;padding:28px;text-align:center;background:#f8fbff}.drop input{width:100%;margin-top:14px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{border:0;border-radius:9px;padding:12px 18px;font-weight:800;cursor:pointer;background:#176b3a;color:#fff}.btn.secondary{background:#0d47a1}.btn.danger{background:#a32121}.msg{margin-top:14px;padding:12px;border-radius:10px;display:none}.msg.show{display:block}.ok{background:#effaf3;color:#176b3a}.bad{background:#fff0f0;color:#a32121}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:20px}.item{border:1px solid #dfe8f3;border-radius:12px;overflow:hidden;background:#071b3a;color:#fff;position:relative}.item img{width:100%;height:130px;object-fit:cover;display:block}.item .num{padding:8px;font-size:12px;font-weight:800}.remove{position:absolute;right:7px;top:7px;border:0;border-radius:50%;width:30px;height:30px;background:#a32121;color:#fff;cursor:pointer;font-size:18px}.hint{font-size:13px;color:#65748b;margin-top:12px}.loading{opacity:.6;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>Hero Page Slider</h1>
+<p class="sub">Upload 5 or as many homepage hero pictures as you want. They will automatically change every 3 seconds and repeat in a continuous loop.</p>
+<div class="drop">
+<strong>Select multiple hero pictures</strong>
+<input id="files" type="file" accept="image/*" multiple>
+<div class="hint">You can select several pictures at once. Existing pictures remain unless you remove them below.</div>
+</div>
+<div id="preview" class="grid"></div>
+<div class="actions">
+<button id="save" class="btn">Save & Publish Slider</button>
+<button id="clear" class="btn danger">Remove All Hero Pictures</button>
+<a class="btn secondary" href="index.html">View Website</a>
+<a class="btn secondary" href="admin.html">Back to Admin</a>
+</div>
+<div id="msg" class="msg"></div>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let content={};
+let images=[];
+let newFiles=[];
+function message(text,ok=true){const e=$('msg');e.textContent=text;e.className='msg show '+(ok?'ok':'bad')}
+function clone(o){return JSON.parse(JSON.stringify(o||{}))}
+function render(){const p=$('preview');p.innerHTML='';images.forEach((url,i)=>{const d=document.createElement('div');d.className='item';d.innerHTML='<button class="remove" data-i="'+i+'" title="Remove">×</button><img src="'+String(url).replace(/["<>]/g,'')+'" alt="Hero '+(i+1)+'"><div class="num">Hero picture '+(i+1)+'</div>';p.appendChild(d)});newFiles.forEach((f,i)=>{const d=document.createElement('div');d.className='item';const img=document.createElement('img');img.alt='New hero '+(i+1);img.src=URL.createObjectURL(f);d.appendChild(img);const n=document.createElement('div');n.className='num';n.textContent='New picture '+(i+1);d.appendChild(n);p.appendChild(d)});p.querySelectorAll('.remove').forEach(b=>b.onclick=()=>{images.splice(Number(b.dataset.i),1);render()})}
+async function adminCheck(){const {data:{user}}=await supabaseClient.auth.getUser();if(!user){location.href='admin.html';return null}const {data}=await supabaseClient.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();if(!data){await supabaseClient.auth.signOut();location.href='admin.html';return null}return user}
+async function load(){const {data,error}=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(error)throw error;content=clone(data?.content||{});content.brand=content.brand||{};const stored=content.brand.heroImages||content.hero?.images||[];images=(Array.isArray(stored)?stored:[]).map(x=>typeof x==='string'?x:(x?.url||x?.src||'')).filter(Boolean);if(!images.length&&content.brand.heroImage)images=[content.brand.heroImage];render()}
+$('files').onchange=e=>{newFiles=[...e.target.files];render()};
+$('clear').onclick=()=>{if(confirm('Remove all hero pictures from the homepage?')){images=[];newFiles=[];render()}};
+$('save').onclick=async()=>{const b=$('save');b.disabled=true;document.body.classList.add('loading');try{const user=await adminCheck();if(!user)return;const next=clone(content);next.brand=next.brand||{};const added=[];for(const file of newFiles){const safe=file.name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-');const path='branding/hero-slider/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'-'+safe;const {error}=await supabaseClient.storage.from('site-media').upload(path,file,{upsert:false,contentType:file.type});if(error)throw error;const url=supabaseClient.storage.from('site-media').getPublicUrl(path).data.publicUrl;added.push(url)}next.brand.heroImages=[...images,...added];if(next.brand.heroImages.length)next.brand.heroImage=next.brand.heroImages[0];else delete next.brand.heroImage;const {error}=await supabaseClient.from('site_settings').upsert({id:'homepage',content:next,updated_by:user.id,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error;content=next;images=next.brand.heroImages||[];newFiles=[];$('files').value='';render();message('Hero slider saved and published successfully. It will change every 3 seconds and loop automatically.');}catch(e){console.error(e);message(e.message||'Save failed',false)}finally{b.disabled=false;document.body.classList.remove('loading')}};
+(async()=>{try{const user=await adminCheck();if(!user)return;await load()}catch(e){message(e.message||'Unable to load hero pictures',false)}})();
+</script>
+</body>
+</html>
