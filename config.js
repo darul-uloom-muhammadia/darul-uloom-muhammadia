@@ -37,3 +37,10 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLI
   const start=()=>{if(isHomePage){publicRefresh();loadInfoCards();}if(isAdminPage)applyAdminBrand();syncEditorFields();loadCharityFix();};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+
+(function(){
+  const isHome=location.pathname.endsWith('/')||location.pathname.endsWith('/index.html');
+  if(!isHome)return;
+  const load=()=>{if(document.getElementById('hero-slider-runtime'))return;const s=document.createElement('script');s.id='hero-slider-runtime';s.src='hero-slider-runtime.js?v=20260817-2';s.defer=true;document.body.appendChild(s);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+})();
