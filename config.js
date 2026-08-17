@@ -1,6 +1,7 @@
 const SUPABASE_URL = 'https://puvsirrwregusqhkixdz.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_VnbXzkbyEZizn4GGTAFxiQ_BeiGw27W';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+window.supabaseClient = supabaseClient;
 (async function(){
  async function loadHomepage(){const {data,error}=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(error)throw error;return data?.content||{}}
  const setText=(s,v)=>{const e=document.querySelector(s);if(e)e.textContent=v??''};
