@@ -1,56 +1,73 @@
-// Exact reference-style student card override.
-// Keeps the previously approved 530x318 card proportions (rendered at 1060x636).
-logoUrl='https://puvsirrwregusqhkixdz.supabase.co/storage/v1/object/public/site-media/branding/logo/1786949491226-whatsapp-image-2026-08-13-at-17.27.34.jpeg';
+// Final student-card UI fix: preserve the approved reference card and QR,
+// fix photo fitting, add editable text above Authorized, and reduce display size.
+const __originalOpenCard = window.openCard;
+const __authTextKey = 'student-card-authorized-text';
 
-async function __cardLogo(){
-  return new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>resolve(i);i.onerror=reject;i.src=logoUrl;});
-}
-async function __cardQR(value){
-  if(window.QRCode&&typeof window.QRCode.toDataURL==='function') return window.QRCode.toDataURL(value,{margin:0,width:220,errorCorrectionLevel:'M'});
-  return '';
-}
-function __drawCircularLogo(ctx,img,x,y,size){
-  ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(img,x,y,size,size);ctx.restore();
-}
-function __fit(ctx,text,max){let s=String(text??'');while(ctx.measureText(s).width>max&&s.length>2)s=s.slice(0,-2)+'…';return s;}
-function __cardPhoto(ctx,img,x,y,w,h){
-  const ar=img.width/img.height, box=w/h;let sw=img.width,sh=img.height,sx=0,sy=0;
-  if(ar>box){sw=img.height*box;sx=(img.width-sw)/2}else{sh=img.width/box;sy=(img.height-sh)/2}
-  ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);
+function __uiLoadImage(src){return new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>resolve(i);i.onerror=reject;i.src=src;});}
+function __fitPhoto(ctx,img,x,y,w,h){
+  ctx.fillStyle='#000154';ctx.fillRect(x,y,w,h);
+  const ar=img.naturalWidth/img.naturalHeight, box=w/h;
+  let sw=img.naturalWidth, sh=img.naturalHeight;
+  if(ar>box){sw=sh*box;}else{sh=sw/box;}
+  const sx=(img.naturalWidth-sw)/2, sy=(img.naturalHeight-sh)/2;
+  ctx.drawImage(img,sx,sy,sw,sh,x+(w-sw)/2,y+(h-sh)/2,sw,sh);
 }
 
-async function studentCardCanvas(card){
-  const canvas=document.createElement('canvas');canvas.width=1060;canvas.height=636;const c=canvas.getContext('2d');
-  c.fillStyle='#fff';c.fillRect(0,0,1060,636);
-  c.fillStyle='#071e9b';c.fillRect(0,0,1060,204);
-  c.fillStyle='#fff';c.beginPath();c.moveTo(805,0);c.lineTo(845,0);c.lineTo(780,204);c.lineTo(740,204);c.closePath();c.fill();
-  const logo=await __cardLogo();__drawCircularLogo(c,logo,914,10,116);
-  c.fillStyle='#fff';c.font='800 48px Arial';c.fillText('Al Ameer Foundation School - AFS',50,92);
-  c.fillStyle='#dbe7ff';c.font='20px Arial';c.fillText('Under the supervision of Madras Darul Uloom Muhammadia Karachi',52,125);
-
-  c.fillStyle='#082aa3';c.fillRect(58,208,244,272);
-  c.strokeStyle='#fff';c.lineWidth=7;c.strokeRect(58,208,244,272);
-  if(studentPhotoUrl){try{const p=await loadImg(studentPhotoUrl);__cardPhoto(c,p,64,214,232,260)}catch(e){}}
-
-  c.fillStyle='#071b3a';c.font='800 36px Arial';const x=354;
-  c.fillText('Name : '+__fit(c,selectedStudent.student_name,570),x,285);
-  c.fillText('Father: '+__fit(c,selectedStudent.father_name,570),x,338);
-  c.fillText('GR    : '+__fit(c,selectedStudent.gr_number,570),x,391);
-  c.fillText('Class : '+__fit(c,selectedStudent.class_name,570),x,444);
-  c.fillText('DOB   : '+dateText(selectedStudent.dob),x,497);
-
-  try{const sig=await loadImg('student-signature.svg');c.drawImage(sig,125,515,155,53)}catch(e){}
-  c.fillStyle='#111';c.font='18px Arial';c.fillText('Authorized',125,584);
-  c.fillStyle='#1451ad';c.fillRect(92,590,180,30);c.fillStyle='#fff';c.font='800 17px Arial';c.fillText('SIGNATORY',116,612);
-
-  const q=await __cardQR(JSON.stringify({gr:selectedStudent.gr_number,name:selectedStudent.student_name,expires:card.expires_at}));
-  if(q){try{const qi=await loadImg(q);c.drawImage(qi,885,470,142,142)}catch(e){}}
-  return canvas;
+function __addAuthorizedEditor(){
+  if(document.getElementById('cardAuthorizedEditor'))return;
+  const wrap=document.createElement('div');
+  wrap.id='cardAuthorizedEditor';
+  wrap.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 12px;padding:10px 12px;background:#f7faff;border:1px solid #dbe6f2;border-radius:10px;';
+  wrap.innerHTML='<label style="margin:0;flex:1;min-width:240px;font-size:12px;font-weight:800;color:#344966">Text above Authorized<input id="authorizedCardText" type="text" maxlength="45" placeholder="Type name / designation"></label>';
+  const preview=document.getElementById('cardPreview');
+  preview.parentNode.insertBefore(wrap,preview);
+  const input=document.getElementById('authorizedCardText');
+  input.value=localStorage.getItem(__authTextKey)||'';
+  input.oninput=()=>{localStorage.setItem(__authTextKey,input.value);__refreshStudentCard();};
 }
 
-async function backCanvas(){
-  const canvas=document.createElement('canvas');canvas.width=1060;canvas.height=636;const c=canvas.getContext('2d');
-  c.fillStyle='#071b3a';c.fillRect(0,0,1060,636);
-  const logo=await __cardLogo();__drawCircularLogo(c,logo,405,103,250);
-  return canvas;
+async function __refreshStudentCard(){
+  const card=window.__currentStudentCard;
+  if(!card||!window.__studentCardOpenOriginal)return;
+  await window.__studentCardOpenOriginal(card,'student');
+  __addAuthorizedEditor();
+  await __applyStudentCardFixes();
 }
+
+async function __applyStudentCardFixes(){
+  const canvas=document.getElementById('frontCanvas');
+  if(!canvas||!window.selectedStudent)return;
+  const ctx=canvas.getContext('2d');
+  // Keep the original reference QR exactly as rendered; only correct the photo area.
+  if(window.studentPhotoUrl){
+    try{
+      const img=await __uiLoadImage(window.studentPhotoUrl);
+      __fitPhoto(ctx,img,87,291,334,379);
+      ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.strokeRect(75,277,360,410);
+    }catch(e){}
+  }else{
+    ctx.fillStyle='#000154';ctx.fillRect(87,291,334,379);
+    ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.strokeRect(75,277,360,410);
+  }
+  const text=document.getElementById('authorizedCardText')?.value?.trim()||'';
+  if(text){
+    ctx.fillStyle='#1d2b38';ctx.font='18px Arial';ctx.textAlign='center';ctx.fillText(text,260,798);ctx.textAlign='left';
+  }
+}
+
+window.__studentCardOpenOriginal=__originalOpenCard;
+window.__currentStudentCard=null;
+window.openCard=async(card,type)=>{
+  if(type!=='student')return __originalOpenCard(card,type);
+  window.__currentStudentCard=card;
+  await __originalOpenCard(card,type);
+  if(document.getElementById('cardModalMeta')){
+    document.getElementById('cardModalMeta').textContent=`${selectedStudent.student_name} · GR ${selectedStudent.gr_number} · Expires ${expText(card.expires_at)}`;
+  }
+  __addAuthorizedEditor();
+  await __applyStudentCardFixes();
+};
+
+const style=document.createElement('style');
+style.textContent='.ref-card{width:min(900px,100%) !important}.card-preview{gap:10px !important}.cardAuthorizedEditor input{margin-top:5px}';
+document.head.appendChild(style);
