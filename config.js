@@ -1,5 +1,7 @@
 const SUPABASE_URL = 'https://puvsirrwregusqhkixdz.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_VnbXzkbyEZizn4GGTAFxiQ_BeiGw27K';
+// Use the project's active legacy anon key for broad browser/CDN compatibility.
+// This is a public client key; database access remains protected by Supabase RLS.
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1dnNpcnJ3cmVndXNxaGtpeGR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2OTE5OTUsImV4cCI6MjEwMjI2Nzk5NX0.MKB-T9hXkHDdqjJ8WpD5fIVnWKEAz2zUqWBLdcxOQIQ';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 (async function () {
