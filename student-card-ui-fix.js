@@ -36,12 +36,12 @@ async function __refreshStudentCard(){
 
 async function __applyStudentCardFixes(){
   const canvas=document.getElementById('frontCanvas');
-  if(!canvas||!window.selectedStudent)return;
+  if(!canvas||!selectedStudent)return;
   const ctx=canvas.getContext('2d');
   // Keep the original reference QR exactly as rendered; only correct the photo area.
-  if(window.studentPhotoUrl){
+  if(studentPhotoUrl){
     try{
-      const img=await __uiLoadImage(window.studentPhotoUrl);
+      const img=await __uiLoadImage(studentPhotoUrl);
       __fitPhoto(ctx,img,87,291,334,379);
       ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.strokeRect(75,277,360,410);
     }catch(e){}
