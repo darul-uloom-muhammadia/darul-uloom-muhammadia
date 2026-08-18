@@ -23,8 +23,12 @@
     x.fillStyle='#0068b8';x.fillRect(0,950,1600,40);x.fillStyle=NAVY;x.fillRect(0,990,1600,50);
     const logo=await loadImage(logoUrl);x.save();x.beginPath();x.arc(1360,145,118,0,Math.PI*2);x.clip();x.drawImage(logo,1240,25,240,240);x.restore();
     x.fillStyle='#fff';x.font='800 56px Arial';x.fillText('Al Ameer Foundation School - AFS',80,145);x.font='24px Arial';x.fillStyle=GOLD;x.fillText('Under the supervision of Madarsa Darul Uloom Muhammadia Karachi',185,180);
-    x.fillStyle='#fff';x.fillRect(75,277,360,410);x.fillStyle=NAVY;x.fillRect(87,291,334,379);
-    if(studentPhotoUrl){try{const p=await loadImage(studentPhotoUrl);const sw=p.naturalWidth,sh=p.naturalHeight;const scale=Math.max(334/sw,379/sh);const dw=sw*scale,dh=sh*scale;const cropY=291+(379-dh)*0.38;x.save();x.beginPath();x.rect(87,291,334,379);x.clip();x.drawImage(p,87+(334-dw)/2,cropY,dw,dh);x.restore()}catch(e){}}
+    x.fillStyle='#fff';x.fillRect(75,277,360,410);
+    // Any uploaded photo is first fitted into a fixed passport-photo frame.
+    // The complete uploaded image stays inside the frame; no part can overflow the card.
+    const PHOTO_X=87, PHOTO_Y=291, PHOTO_W=334, PHOTO_H=379;
+    x.fillStyle='#fff';x.fillRect(PHOTO_X,PHOTO_Y,PHOTO_W,PHOTO_H);
+    if(studentPhotoUrl){try{const p=await loadImage(studentPhotoUrl);const sw=p.naturalWidth,sh=p.naturalHeight;const scale=Math.min(PHOTO_W/sw,PHOTO_H/sh);const dw=sw*scale,dh=sh*scale;x.save();x.beginPath();x.rect(PHOTO_X,PHOTO_Y,PHOTO_W,PHOTO_H);x.clip();x.drawImage(p,PHOTO_X+(PHOTO_W-dw)/2,PHOTO_Y+(PHOTO_H-dh)/2,dw,dh);x.restore()}catch(e){}}
     x.strokeStyle='#fff';x.lineWidth=7;x.strokeRect(75,277,360,410);
     x.font='800 58px Arial';const labelX=510;
     const cardName=formValue('sName',selectedStudent.student_name);
@@ -35,6 +39,7 @@
     [['Name',cardName,400],['Father',cardFather,485],['GR',cardGr,570],['Class',cardClass,655],['DOB',cardDob?dateText(cardDob):'—',740]].forEach(([lab,val,yy])=>{x.fillStyle='#061a7a';x.fillText(lab,labelX,yy);x.fillText(':',675,yy);x.fillStyle='#1d2b38';x.fillText(fit(x,val,600),705,yy)});
     try{const sig=await loadImage('student-signature.svg');x.drawImage(sig,175,705,185,78)}catch(e){}
     x.fillStyle='#1d2b38';x.font='20px Arial';x.fillText('Authorized',174,805);x.fillStyle='#0d47a1';x.fillRect(125,815,255,38);x.fillStyle='#fff';x.font='800 26px Arial';x.fillText('SIGNATORY',155,844);
+    // QR remains on the reference card's right-side square, at the same visual size/position.
     const qrSrc=await makeQr(card);if(qrSrc){const qr=await loadImage(qrSrc);x.fillStyle='#fff';x.fillRect(1238,643,259,259);x.drawImage(qr,1245,650,245,245)}
     x.restore();return c;
   }
