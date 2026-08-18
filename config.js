@@ -17,3 +17,17 @@ window.supabaseClient = supabaseClient;
 (function(){if(!location.pathname.endsWith('student-management.html'))return;const load=()=>{if(document.getElementById('student-card-ui-fix'))return;const s=document.createElement('script');s.id='student-card-ui-fix';s.src='student-card-ui-fix.js?v=20260817-4';s.defer=false;document.body.appendChild(s)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()})();
 (function(){function addFinance(){if(!/admin\\.html$|management\\.html$|student-management\\.html$/.test(location.pathname))return;if(document.getElementById('private-finance-link'))return;const a=document.createElement('a');a.id='private-finance-link';a.href='finance.html';a.textContent='💰 Madrasa Finance';a.style.cssText='display:inline-flex;align-items:center;justify-content:center;padding:11px 14px;border-radius:9px;background:#0d47a1;color:#fff;text-decoration:none;font-weight:800;margin:4px';document.querySelectorAll('.head div:last-child,.top-actions').forEach(x=>x.appendChild(a.cloneNode(true)));}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addFinance,{once:true});else addFinance()})();
 (function(){if(!location.pathname.endsWith('website-editor.html'))return;const load=()=>{if(document.getElementById('info-cards-editor-script'))return;const s=document.createElement('script');s.id='info-cards-editor-script';s.src='info-cards.js?v=20260818-3';s.defer=true;document.body.appendChild(s)};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load()})();
+(function(){
+ function addCardEditorLinks(){
+   if(!/admin\\.html$|management\\.html$|student-management\\.html$/.test(location.pathname))return;
+   if(document.getElementById('student-card-editor-link'))return;
+   const a=document.createElement('a');a.id='student-card-editor-link';a.href='student-card-editor.html';a.textContent='🪪 Edit Student Card';a.style.cssText='display:inline-flex;align-items:center;justify-content:center;padding:11px 14px;border-radius:9px;background:#6a1b9a;color:#fff;text-decoration:none;font-weight:800;margin:4px';
+   document.querySelectorAll('.head div:last-child,.top-actions,.toolbar-actions').forEach(x=>x.appendChild(a.cloneNode(true)));
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCardEditorLinks,{once:true});else addCardEditorLinks();
+})();
+(function(){
+ if(!location.pathname.endsWith('student-card-editor.html'))return;
+ const load=()=>{if(document.getElementById('student-card-editor-runtime'))return;const s=document.createElement('script');s.id='student-card-editor-runtime';s.src='student-card-editor-fix.js?v=20260818-1';s.defer=true;document.body.appendChild(s)};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
+})();
