@@ -32,21 +32,20 @@ body.admin-page{min-height:100vh;background:linear-gradient(135deg,#041329,#0b34
 <div class="panel" data-panel="taaruf"><h2 class="section-title">تعارف نامہ</h2><p class="hint">Existing Taaruf editor.</p></div>
 <div class="panel active" data-panel="important">
 <h2 class="section-title">اہم معلومات کے 8 کارڈز</h2>
-<p class="hint">یہ صرف عوامی 8 cards کے لیے edit option ہے۔ عنوان، آئیکن اور مکمل تفصیلات تبدیل کر کے Save & Publish کریں۔</p>
+<p class="hint">صرف عوامی 8 cards۔ عنوان، آئیکن اور مکمل تفصیلات تبدیل کریں اور Save & Publish کریں۔</p>
 <div id="cards"></div>
 </div>
 </div></section></main>
 <script>
 const supabaseClient=window.supabaseClient||window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-const cardsEl=document.getElementById('cards');
-const msg=document.getElementById('msg');
+const cardsEl=document.getElementById('cards');const msg=document.getElementById('msg');
+const defaults=[['📖','نصابِ تعلیم','یہاں نصابِ تعلیم، درجات اور متعلقہ تعلیمی معلومات درج کی جائیں گی۔'],['▣','تعلیمی شعبہ جات','یہاں جامعہ کے مختلف تعلیمی شعبہ جات کی تفصیل درج کی جائے گی۔'],['◈','شعبہ جات','یہاں جامعہ کے مختلف شعبہ جات اور ان کی بنیادی معلومات درج کی جائیں گی۔'],['⌂','ادارہ و انتظامی معلومات','یہاں ادارے، انتظامیہ اور متعلقہ معلومات درج کی جائیں گی۔'],['⌁','منصوبے','یہاں جاری اور آئندہ منصوبوں کی معلومات درج کی جائیں گی۔'],['☷','قواعد و ضوابط','یہاں طلبہ اور زائرین کے لیے ضروری قواعد و ضوابط درج کیے جائیں گے۔'],['▤','نوٹس بورڈ','اہم اعلانات، تازہ نوٹس اور انتظامیہ کی ضروری اطلاعات یہاں دکھائی جائیں گی۔'],['🤝','طریقہ تعاون','ادارے کے ساتھ تعاون، عطیات اور دیگر معاونت کے طریقہ کار کی معلومات یہاں درج کی جائیں گی۔']];
 let cards=[];
-const fallback=[1,2,3,4,5,6,7,8].map(i=>({icon:'ℹ️',title:'اہم معلومات '+i,details:''}));
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function render(){cardsEl.innerHTML=cards.map((c,i)=>`<div class="item"><h4>کارڈ ${i+1}</h4><div class="grid"><div class="field"><label>آئیکن</label><input data-i="${i}" data-k="icon" value="${esc(c.icon)}"></div><div class="field"><label>عنوان</label><input data-i="${i}" data-k="title" value="${esc(c.title)}"></div><div class="field" style="grid-column:1/-1"><label>تفصیلات</label><textarea data-i="${i}" data-k="details">${esc(c.details)}</textarea></div></div></div>`).join('')}
-async function load(){try{const r=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(r.error)throw r.error;const c=r.data?.content||{};cards=Array.isArray(c.importantCards)?c.importantCards.slice(0,8):fallback;while(cards.length<8)cards.push(fallback[cards.length]);render()}catch(e){cards=structuredClone(fallback);render();show('Cards loaded locally.','error')}}
+function render(){cardsEl.innerHTML=cards.map((c,i)=>`<div class="item"><h4>کارڈ ${i+1}</h4><div class="grid"><div class="field"><label>آئیکن</label><input data-i="${i}" data-k="icon" value="${esc(c.icon)}"></div><div class="field"><label>عنوان</label><input data-i="${i}" data-k="title" value="${esc(c.title)}"></div><div class="field" style="grid-column:1/-1"><label>تفصیلات</label><textarea data-i="${i}" data-k="body">${esc(c.body)}</textarea></div></div></div>`).join('')}
+async function load(){try{const r=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(r.error)throw r.error;const c=r.data?.content||{};let a=Array.isArray(c.infoCards)?c.infoCards:[];cards=defaults.map((d,i)=>{const x=a[i]||{};return {icon:String(x.icon??d[0]),title:String(x.title??d[1]),body:String(x.body??d[2])}});render()}catch(e){cards=defaults.map(d=>({icon:d[0],title:d[1],body:d[2]}));render();show('Cards loaded.','error')}}
 function collect(){document.querySelectorAll('[data-i][data-k]').forEach(e=>cards[+e.dataset.i][e.dataset.k]=e.value)}
-async function save(){collect();try{const r=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(r.error)throw r.error;const content=r.data?.content||{};content.importantCards=cards;const u=await supabaseClient.from('site_settings').upsert({id:'homepage',content});if(u.error)throw u.error;show('Saved & published successfully.','success')}catch(e){show('Save failed: '+(e.message||e),'error')}}
+async function save(){collect();try{const r=await supabaseClient.from('site_settings').select('content').eq('id','homepage').maybeSingle();if(r.error)throw r.error;const content={...(r.data?.content||{}),infoCards:cards.map(c=>({icon:c.icon,title:c.title,body:c.body}))};const u=await supabaseClient.from('site_settings').upsert({id:'homepage',content});if(u.error)throw u.error;show('Saved & published successfully.','success')}catch(e){show('Save failed: '+(e.message||e),'error')}}
 function show(t,type){msg.textContent=t;msg.className='msg show '+type;setTimeout(()=>msg.className='msg',3500)}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelector(`[data-panel="${b.dataset.tab}"]`).classList.add('active')}));
 document.getElementById('save').addEventListener('click',save);load();
