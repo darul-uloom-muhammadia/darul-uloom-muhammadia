@@ -1,0 +1,39 @@
+name: Fix student card editor payload
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-student-card-editor.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix payload handoff and cache
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('student-card-editor-v2.js')
+          s = p.read_text()
+          old = "function readPayload(){try{return JSON.parse(sessionStorage.getItem('student-card-editor-payload')||'null')}catch(e){return null}}"
+          new = "function readPayload(){try{const raw=sessionStorage.getItem('student-card-editor-payload')||localStorage.getItem('student-card-editor-payload');return raw?JSON.parse(raw):null}catch(e){return null}}"
+          if old not in s:
+              raise SystemExit('Expected readPayload function not found')
+          p.write_text(s.replace(old,new,1))
+          html = Path('student-card-editor.html')
+          hs = html.read_text()
+          hs = hs.replace('student-card-editor-v2.js?v=20260818-v2','student-card-editor-v2.js?v=20260820-payload1')
+          html.write_text(hs)
+          PY
+      - name: Commit fix and remove one-time workflow
+        run: |
+          rm -f .github/workflows/fix-student-card-editor.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add student-card-editor-v2.js student-card-editor.html .github/workflows/fix-student-card-editor.yml
+          git commit -m 'Fix student card editor payload loading'
+          git push
