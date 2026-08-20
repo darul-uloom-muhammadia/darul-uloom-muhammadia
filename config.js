@@ -26,8 +26,3 @@ window.supabaseClient = supabaseClient;
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCardEditorLinks,{once:true});else addCardEditorLinks();
 })();
-(function(){
- if(!location.pathname.endsWith('student-card-editor.html'))return;
- const load=()=>{if(document.getElementById('student-card-editor-runtime'))return;const s=document.createElement('script');s.id='student-card-editor-runtime';s.src='student-card-editor-fix.js?v=20260818-1';s.defer=true;document.body.appendChild(s)};
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',load,{once:true});else load();
-})();
