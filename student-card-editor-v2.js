@@ -11,7 +11,7 @@ async function isAdmin(user){const sb=supa();if(!sb||!user)return false;const r=
 async function gate(){try{const sb=supa();if(!sb)throw new Error('Supabase configuration is unavailable.');const {data:{user}}=await sb.auth.getUser();if(user&&await isAdmin(user)){openEditor();return}showLogin()}catch(e){showLogin();$('loginMsg').textContent=e.message||'Please log in.'}}
 function showLogin(){$('login').classList.remove('hidden');$('editor').classList.add('hidden')}
 async function login(){try{$('loginBtn').disabled=true;const sb=supa();const {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;if(!await isAdmin(data.user)){await sb.auth.signOut();throw new Error('This account is not an authorized admin.')}openEditor()}catch(e){$('loginMsg').textContent=e.message||'Login failed'}finally{$('loginBtn').disabled=false}}
-function readPayload(){try{return JSON.parse(sessionStorage.getItem('student-card-editor-payload')||'null')}catch(e){return null}}
+function readPayload(){try{const raw=sessionStorage.getItem('student-card-editor-payload')||localStorage.getItem('student-card-editor-payload');return raw?JSON.parse(raw):null}catch(e){return null}}
 function openEditor(){$('login').classList.add('hidden');$('editor').classList.remove('hidden');payload=readPayload();if(!payload){status('No generated card was supplied. Open Edit Student Card from Generate / View Card.');}init()}
 function txt(text,left,top,fontSize=30,fill='#1d2b38',weight='normal',extra={}){return new fabric.IText(String(text??''),{left,top,fontSize,fill,fontFamily:'Arial',fontWeight:weight,originX:'left',originY:'top',...extra})}
 function add(o){canvas.add(o);canvas.setActiveObject(o);canvas.renderAll();return o}
